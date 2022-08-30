@@ -7,7 +7,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Vehicle {
+    private int id;
     private String type;
     private String name;
-    private String licensePlateNumber;
+    private String lpn;
+    private String image;
+    private String lpnImage;
 }
