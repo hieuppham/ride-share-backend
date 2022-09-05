@@ -59,7 +59,6 @@ public class TestSendMail {
         response.setEndTime(LocalDateTime.now());
         response.setUser(userDto);
         response.setVehicle(vehicleDto);
-        mailServiceImpl.sendMail(userDto.getEmail(), MailAction.CREATE_RIDE, response);
     }
 
     @Test

@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface UserMapper extends EntityMapper<UserDto, User> {
    User toEntity(SaveUserRequest saveUserRequest);
-   User toEntity(UpdateUserRequest updateUserRequest);
+   User toEntity(User user, UpdateUserRequest updateUserRequest);
    List<FindUserByTextResponse> toFindByTextResponse(List<User> users);
    List<FindUsersAdminResponse> toFindUsersAdminResponse(List<User> users);
    FindShortUserInfoResponse toShortInfo(User user);

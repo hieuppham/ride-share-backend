@@ -24,6 +24,6 @@ public class Ride {
     private Route route;
     private List<String> criterions = new ArrayList<>();
     private String note;
-    private EntityStatus status = EntityStatus.UNKNOWN;
+    private EntityStatus status = EntityStatus.PENDING;
     private Feature path;
 }

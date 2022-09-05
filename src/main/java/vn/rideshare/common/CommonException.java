@@ -18,4 +18,9 @@ public class CommonException extends RuntimeException {
         this.code = e.getCode();
         this.message = e.getMessage();
     }
+
+    public CommonException(Exception e){
+        this.code = ErrorCode.INTERNAL_SYSTEM_ERROR.getCode();
+        this.message = e.getMessage();
+    }
 }

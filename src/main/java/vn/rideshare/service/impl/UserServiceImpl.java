@@ -2,6 +2,7 @@ package vn.rideshare.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.UpdateStatusRequest;
@@ -16,6 +17,8 @@ import vn.rideshare.repository.UserRepository;
 import vn.rideshare.service.MailService;
 import vn.rideshare.service.UserService;
 
+import javax.mail.MessagingException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,13 +51,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UpdateUserRequest updateUserRequest) {
         try {
-            User user = userRepository.save(
-                    userMapper.toEntity(updateUserRequest)
-            );
+            User user = userRepository.findById(updateUserRequest.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
+            user = userMapper.toEntity(user, updateUserRequest);
+            userRepository.save(user);
             mailService.sendMail(user.getEmail(), MailAction.UPDATE_USER, user);
             return userMapper.toDto(user);
-        } catch (Exception e) {
-            throw new CommonException(ErrorCode.INTERNAL_SYSTEM_ERROR);
+        } catch (MessagingException | MailException | IOException e) {
+            throw new CommonException(e);
+        } catch (CommonException e) {
+            throw e;
         }
     }
 
@@ -69,8 +74,10 @@ public class UserServiceImpl implements UserService {
                 mailService.sendMail(user.getEmail(), action, user);
             }
             return true;
-        } catch (Exception e) {
-            throw new CommonException(ErrorCode.INTERNAL_SYSTEM_ERROR);
+        } catch (MessagingException | MailException | IOException e) {
+            throw new CommonException(e);
+        } catch (CommonException e) {
+            throw e;
         }
     }
 

@@ -2,6 +2,7 @@ package vn.rideshare.service.impl;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -9,8 +10,8 @@ import vn.rideshare.client.dto.ride.FindRideDetailResponse;
 import vn.rideshare.client.dto.ride.VehicleDto;
 import vn.rideshare.common.MailAction;
 import vn.rideshare.model.EntityStatus;
-import vn.rideshare.model.Ride;
 import vn.rideshare.model.User;
+import vn.rideshare.model.Vehicle;
 import vn.rideshare.service.MailService;
 
 import javax.mail.MessagingException;
@@ -26,23 +27,20 @@ import java.util.List;
 public class MailServiceImpl implements MailService {
     @Autowired
     private JavaMailSender javaMailSender;
-    private static final int FAKE_TOTAL_NUMBER_OF_USERS = 999;
-    private static final String FAKE_EMAIL_SUPPORT = "phamtrunghieu6d@gmail.com";
-    private static final String FAKE_URL_WEB = "http://localhost:4200";
+    private static final int TOTAL_NUMBER_OF_USERS = 999;
+    private static final String EMAIL_SUPPORT = "phamtrunghieu6d@gmail.com";
+    private static final String URL_WEB = "http://localhost:4200";
+    private static final String FROM = "phamtrunghieu.dev@outlook.com.vn";
 
-    public boolean sendMail(String to, MailAction action, Object data) throws RuntimeException, IOException {
+    public boolean sendMail(String to, MailAction action, Object data) throws MessagingException, MailException, IOException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-        try {
-            helper.setFrom("phamtrunghieu.dev@outlook.com.vn");
-            helper.setTo(to);
-            helper.setSubject(action.getEmailTitle());
-            helper.setText(buildContent(action, data), true);
-            javaMailSender.send(helper.getMimeMessage());
-            return true;
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
+        helper.setFrom("phamtrunghieu.dev@outlook.com.vn");
+        helper.setTo(to);
+        helper.setSubject(action.getEmailTitle());
+        helper.setText(buildContent(action, data), true);
+        javaMailSender.send(helper.getMimeMessage());
+        return true;
     }
 
     private String buildContent(MailAction action, Object data) throws IOException {
@@ -60,10 +58,10 @@ public class MailServiceImpl implements MailService {
                     convertStatus(user.getStatus()),
                     user.getEmail(),
                     user.getPhone(),
-                    "XE MÁY - HONDA WAVE - 98B98888",
-                    FAKE_URL_WEB,
-                    FAKE_TOTAL_NUMBER_OF_USERS,
-                    FAKE_EMAIL_SUPPORT
+                    convertVehicle(user.getVehicles()),
+                    URL_WEB,
+                    TOTAL_NUMBER_OF_USERS,
+                    EMAIL_SUPPORT
             );
         } else {
             FindRideDetailResponse ride = FindRideDetailResponse.class.cast(data);
@@ -78,9 +76,9 @@ public class MailServiceImpl implements MailService {
                     convertLocalDateTime(ride.getEndTime()),
                     convertCriterions(ride.getCriterions()),
                     ride.getNote(),
-                    FAKE_URL_WEB,
-                    FAKE_TOTAL_NUMBER_OF_USERS,
-                    FAKE_EMAIL_SUPPORT
+                    URL_WEB,
+                    TOTAL_NUMBER_OF_USERS,
+                    EMAIL_SUPPORT
             );
         }
         return result;
@@ -110,6 +108,33 @@ public class MailServiceImpl implements MailService {
         return String.join(", ", criterions);
     }
 
+    private String convertVehicle(List<Vehicle> vehicles) {
+        String result = "";
+        for (Vehicle vehicle : vehicles) {
+            result += convertType(vehicle.getType())
+                    .concat(" - ")
+                    .concat(vehicle.getName())
+                    .concat(" - ")
+                    .concat(vehicle.getLpn())
+                    .concat("\n");
+        }
+        return result;
+    }
+
+    private String convertType(String type) {
+        switch (type) {
+            case "car": {
+                type = "Ô TÔ";
+                break;
+            }
+            case "motorbike": {
+                type = "XE MÁY";
+                break;
+            }
+        }
+        return type;
+    }
+
     private String convertStatus(EntityStatus status) {
         String result;
         switch (status) {
@@ -128,7 +153,10 @@ public class MailServiceImpl implements MailService {
             case EXPIRED: {
                 result = "Đã kết thúc";
                 break;
-
+            }
+            case PENDING: {
+                result = "Chờ phê duyệt";
+                break;
             }
             default: {
                 result = "Không hoạt động";

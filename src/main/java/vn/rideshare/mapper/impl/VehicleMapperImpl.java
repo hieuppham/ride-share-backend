@@ -6,7 +6,9 @@ import vn.rideshare.client.dto.user.VehicleDto;
 import vn.rideshare.mapper.VehicleMapper;
 import vn.rideshare.model.Vehicle;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class VehicleMapperImpl implements VehicleMapper {
@@ -30,7 +32,18 @@ public class VehicleMapperImpl implements VehicleMapper {
 
     @Override
     public List<Vehicle> toEntity(List<VehicleDto> dtoList) {
-        return null;
+        if (dtoList == null){
+            return null;
+        }
+        return Arrays
+                .stream(modelMapper
+                        .map(dtoList, Vehicle[].class))
+                .map(vehicle -> {
+                    vehicle.setName(vehicle.getName().toUpperCase());
+                    vehicle.setLpn(vehicle.getLpn().toUpperCase());
+                    return vehicle;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override

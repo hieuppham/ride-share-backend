@@ -2,6 +2,7 @@ package vn.rideshare.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.UpdateStatusRequest;
@@ -18,6 +19,8 @@ import vn.rideshare.repository.UserRepository;
 import vn.rideshare.service.MailService;
 import vn.rideshare.service.RideService;
 
+import javax.mail.MessagingException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +48,10 @@ public class RideServiceImpl implements RideService {
             ride = rideRepository.save(ride);
             mailService.sendMail(user.getEmail(), MailAction.CREATE_RIDE, rideMapper.toFindRideDetailResponse(ride, user));
             return rideMapper.toDto(ride);
-        } catch (Exception e) {
-            throw new CommonException(ErrorCode.INTERNAL_SYSTEM_ERROR);
+        } catch (MessagingException | MailException | IOException e) {
+            throw new CommonException(e);
+        } catch (CommonException e) {
+            throw e;
         }
     }
 
@@ -62,8 +67,10 @@ public class RideServiceImpl implements RideService {
                 mailService.sendMail(user.getEmail(), action, rideMapper.toFindRideDetailResponse(ride, user));
             }
             return true;
-        } catch (Exception e) {
-            throw new CommonException(ErrorCode.INTERNAL_SYSTEM_ERROR);
+        } catch (MessagingException | MailException | IOException e) {
+            throw new CommonException(e);
+        } catch (CommonException e) {
+            throw e;
         }
     }
 
