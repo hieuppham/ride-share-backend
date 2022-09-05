@@ -1,7 +1,6 @@
 package vn.rideshare.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import vn.rideshare.client.dto.FindByIdRequest;
@@ -20,9 +19,7 @@ import vn.rideshare.service.MailService;
 import vn.rideshare.service.RideService;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class RideServiceImpl implements RideService {
@@ -86,7 +83,7 @@ public class RideServiceImpl implements RideService {
     }
 
     @Override
-    public List<FindRidesResponse> findRidesByUserId(FindByIdRequest request) {
+    public List<FindRideDetailResponse> findRidesByUserId(FindByIdRequest request) {
         return rideRepository.findRidesByUserId(request.getId());
     }
 

@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.rideshare.client.dto.ride.FindRidesAdminResponse;
 import vn.rideshare.client.dto.user.FindUsersAdminResponse;
-import vn.rideshare.client.dto.user.UserDto;
 import vn.rideshare.service.RideService;
 import vn.rideshare.service.UserService;
 

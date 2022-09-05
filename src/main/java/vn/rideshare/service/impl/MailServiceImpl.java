@@ -73,7 +73,7 @@ public class MailServiceImpl implements MailService {
                     action.getContentSmallTitle(),
                     convertStatus(ride.getStatus()),
                     convertVehicle(ride.getVehicle()),
-                    ride.getDistance(),
+                    convertDistance(ride.getDistance()),
                     convertLocalDateTime(ride.getStartTime()),
                     convertLocalDateTime(ride.getEndTime()),
                     convertCriterions(ride.getCriterions()),
@@ -84,6 +84,10 @@ public class MailServiceImpl implements MailService {
             );
         }
         return result;
+    }
+
+    private double convertDistance(double distance) {
+        return Math.round(distance * 100.0 / 1000.0) / 100.0;
     }
 
     private String convertVehicleType(String type) {

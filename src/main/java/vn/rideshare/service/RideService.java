@@ -17,7 +17,7 @@ public interface RideService {
 
     List<FindRidesResponse> findAllRides();
 
-    List<FindRidesResponse> findRidesByUserId(FindByIdRequest request);
+    List<FindRideDetailResponse> findRidesByUserId(FindByIdRequest request);
 
     List<FindRidesAdminResponse> findAllRidesAdmin();
 

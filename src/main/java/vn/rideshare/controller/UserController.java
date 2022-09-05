@@ -3,6 +3,7 @@ package vn.rideshare.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.UpdateStatusRequest;
 import vn.rideshare.client.dto.user.*;
 import vn.rideshare.service.UserService;
@@ -25,9 +26,15 @@ public class UserController {
         return ResponseEntity.ok().body(userService.updateUser(request));
     }
 
+    @PostMapping("/find-short-info-by-id")
+    public ResponseEntity<FindShortUserInfoResponse> findShortUserInfoById(@RequestBody FindByIdRequest request) {
+        return ResponseEntity.ok()
+                .body(userService.findShortUserInfoById(request));
+    }
+
     @PostMapping("/find-by-id")
-    public ResponseEntity<UserDto> findUserById(@RequestBody FindUserByIdRequest findUserByIdRequest) {
-        return ResponseEntity.ok().body(userService.getUserById(findUserByIdRequest));
+    public ResponseEntity<UserDto> findUserById(@RequestBody FindByIdRequest request) {
+        return ResponseEntity.ok().body(userService.getUserById(request));
     }
 
     @PostMapping("/update-status")

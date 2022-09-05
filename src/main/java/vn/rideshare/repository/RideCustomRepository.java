@@ -9,6 +9,6 @@ public interface RideCustomRepository {
 
      List<FindRidesResponse> findAllRides();
 
-     List<FindRidesResponse> findRidesByUserId(String id);
+     List<FindRideDetailResponse> findRidesByUserId(String id);
 
 }

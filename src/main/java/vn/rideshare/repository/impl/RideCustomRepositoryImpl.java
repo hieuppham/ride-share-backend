@@ -68,7 +68,7 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
     }
 
     @Override
-    public List<FindRidesResponse> findRidesByUserId(String id) {
+    public List<FindRideDetailResponse> findRidesByUserId(String id) {
         List<AggregationOperation> aggregations = new ArrayList<>();
 
         Criteria criteria = new Criteria();
@@ -82,12 +82,29 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
                 "vehicleId",
                 "_class");
         aggregations.add(project);
-        return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRidesResponse.class)
-                .getMappedResults().stream().map(ride -> fillMissingFields(ride)).collect(Collectors.toList());
+        return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRideDetailResponse.class)
+                .getMappedResults().stream().map(ride -> fillMissingFieldsDetail(ride)).collect(Collectors.toList());
     }
 
     private Point toPoint(List<Double> coordinates) {
         return new Point(coordinates.get(0), coordinates.get(1));
+    }
+
+    private FindRideDetailResponse fillMissingFieldsDetail(FindRideDetailResponse ride) {
+        Ride var1 = mongoTemplate.findById(ride.getId(), Ride.class);
+        User var2 = mongoTemplate.findById(var1.getUserId(), User.class);
+        ride.setDistance(var1.getRoute().getDistance());
+        ride.setStartPointTitle(var1.getPath().getProperties().getStartPointTitle());
+        ride.setEndPointTitle(var1.getPath().getProperties().getEndPointTitle());
+        ride.setVehicle(var2.getVehicles()
+                .stream()
+                .filter(v -> v.getId() == var1.getVehicleId())
+                .map(v -> {
+                    VehicleDto dto = new VehicleDto();
+                    dto.setType(v.getType());
+                    return dto;
+                }).collect(Collectors.toList()).get(0));
+        return ride;
     }
 
     private FindRidesResponse fillMissingFields(FindRidesResponse ride) {

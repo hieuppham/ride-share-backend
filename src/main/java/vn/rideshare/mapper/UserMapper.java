@@ -9,6 +9,6 @@ public interface UserMapper extends EntityMapper<UserDto, User> {
    User toEntity(SaveUserRequest saveUserRequest);
    User toEntity(UpdateUserRequest updateUserRequest);
    List<FindUserByTextResponse> toFindByTextResponse(List<User> users);
-
    List<FindUsersAdminResponse> toFindUsersAdminResponse(List<User> users);
+   FindShortUserInfoResponse toShortInfo(User user);
 }

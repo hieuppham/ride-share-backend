@@ -1,5 +1,6 @@
 package vn.rideshare.service;
 
+import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.UpdateStatusRequest;
 import vn.rideshare.client.dto.user.*;
 
@@ -10,7 +11,7 @@ public interface UserService {
 
     UserDto updateUser(UpdateUserRequest updateUserRequest);
 
-    UserDto getUserById(FindUserByIdRequest findUserByIdRequest);
+    UserDto getUserById(FindByIdRequest findUserByIdRequest);
 
     boolean updateStatus(UpdateStatusRequest updateUserStatusRequest);
 
@@ -19,4 +20,6 @@ public interface UserService {
     List<FindUserByTextResponse> findUsersByText(FindUserByTextRequest request);
 
     List<FindUsersAdminResponse> findUsersAdmin();
+
+    FindShortUserInfoResponse findShortUserInfoById(FindByIdRequest request);
 }

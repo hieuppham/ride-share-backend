@@ -3,6 +3,7 @@ package vn.rideshare.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.UpdateStatusRequest;
 import vn.rideshare.client.dto.user.*;
 import vn.rideshare.common.CommonException;
@@ -38,7 +39,6 @@ public class UserServiceImpl implements UserService {
                 user = userMapper.toEntity(saveUserRequest);
             }
             user = userRepository.save(user);
-            mailService.sendMail(user.getEmail(), MailAction.UPDATE_USER, user);
             return userMapper.toDto(user);
         } catch (Exception e) {
             throw new CommonException(ErrorCode.INTERNAL_SYSTEM_ERROR);
@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
             user.setStatus(request.getStatus());
             user = userRepository.save(user);
             if (request.isSendEmail()) {
-                MailAction action = request.getStatus() == EntityStatus.ACTIVE ? MailAction.UPDATE_RIDE_STATUS_ACTIVE : MailAction.UPDATE_RIDE_STATUS_INACTIVE;
+                MailAction action = request.getStatus() == EntityStatus.ACTIVE ? MailAction.UPDATE_USER_STATUS_ACTIVE : MailAction.UPDATE_USER_STATUS_INACTIVE;
                 mailService.sendMail(user.getEmail(), action, user);
             }
             return true;
@@ -92,7 +92,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserById(FindUserByIdRequest request) {
+    public FindShortUserInfoResponse findShortUserInfoById(FindByIdRequest request) {
+        return userMapper.toShortInfo(userRepository.findById(request.getId()).get());
+    }
+
+    @Override
+    public UserDto getUserById(FindByIdRequest request) {
         User user = userRepository.findById(request.getId()).orElse(null);
         return userMapper.toDto(user);
     }

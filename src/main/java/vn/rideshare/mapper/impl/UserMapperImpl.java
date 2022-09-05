@@ -70,4 +70,12 @@ public class UserMapperImpl implements UserMapper {
             return modelMapper.map(userEntity, FindUsersAdminResponse.class);
         }).collect(Collectors.toList());
     }
+
+    @Override
+    public FindShortUserInfoResponse toShortInfo(User user) {
+        FindShortUserInfoResponse response = new FindShortUserInfoResponse();
+        response.setId(user.getId());
+        response.setPhotoURL(user.getPhotoURL());
+        return response;
+    }
 }

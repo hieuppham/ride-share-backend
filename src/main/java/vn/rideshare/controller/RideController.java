@@ -46,7 +46,7 @@ public class RideController {
     }
 
     @PostMapping("/find-by-user-id")
-    public ResponseEntity<List<FindRidesResponse>> findRidesByUserId(@RequestBody FindByIdRequest request) {
+    public ResponseEntity<List<FindRideDetailResponse>> findRidesByUserId(@RequestBody FindByIdRequest request) {
         return ResponseEntity.ok()
                 .body(rideService.findRidesByUserId(request));
     }
