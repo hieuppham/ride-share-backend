@@ -22,4 +22,6 @@ public interface RideService {
     List<FindRidesAdminResponse> findAllRidesAdmin();
 
     FindRideDetailResponse findDetailById(FindByIdRequest request);
+
+    FindRidesResponse findSingleRideById(FindByIdRequest request);
 }

@@ -39,6 +39,12 @@ public class RideController {
                 .body(rideService.findDetailById(request));
     }
 
+    @PostMapping("/find-single-ride-by-id")
+    public ResponseEntity<FindRidesResponse> findSingleRideById(@RequestBody FindByIdRequest request) {
+        return ResponseEntity.ok()
+                .body(rideService.findSingleRideById(request));
+    }
+
     @PostMapping("/find-by-bound")
     public ResponseEntity<List<FindRidesResponse>> findRidesByBound(@RequestBody FindRidesByBoundRequest request){
         return ResponseEntity.ok()

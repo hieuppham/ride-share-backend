@@ -6,8 +6,8 @@ import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.ride.*;
 import vn.rideshare.model.EntityStatus;
 import vn.rideshare.model.Ride;
@@ -45,7 +45,7 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
                 "_class");
         aggregations.add(project);
         return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRidesResponse.class)
-                .getMappedResults().stream().map(ride -> fillMissingFields(ride)).collect(Collectors.toList());
+                .getMappedResults().stream().map(this::fillMissingFields).collect(Collectors.toList());
     }
 
     @Override
@@ -58,13 +58,13 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
         aggregations.add(match);
 
         AggregationOperation project = new ProjectionOperation().andExclude(
-                "uid",
+                "userId",
                 "route",
                 "vehicleId",
                 "_class");
         aggregations.add(project);
         return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRidesResponse.class)
-                .getMappedResults().stream().map(ride -> fillMissingFields(ride)).collect(Collectors.toList());
+                .getMappedResults().stream().map(this::fillMissingFields).collect(Collectors.toList());
     }
 
     @Override
@@ -77,13 +77,31 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
         aggregations.add(match);
 
         AggregationOperation project = new ProjectionOperation().andExclude(
-                "uid",
+                "userId",
                 "route",
                 "vehicleId",
                 "_class");
         aggregations.add(project);
         return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRideDetailResponse.class)
-                .getMappedResults().stream().map(ride -> fillMissingFieldsDetail(ride)).collect(Collectors.toList());
+                .getMappedResults().stream().map(this::fillMissingFieldsDetail).collect(Collectors.toList());
+    }
+
+    @Override
+    public FindRidesResponse findSingleRideById(FindByIdRequest request) {
+        List<AggregationOperation> aggregations = new ArrayList<>();
+
+        Criteria criteria = new Criteria("_id").is(request.getId());
+        MatchOperation match = new MatchOperation(criteria);
+        aggregations.add(match);
+
+        AggregationOperation project = new ProjectionOperation().andExclude(
+                "userId",
+                "route",
+                "vehicleId",
+                "_class");
+        aggregations.add(project);
+        return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRidesResponse.class)
+                .getMappedResults().stream().map(this::fillMissingFields).collect(Collectors.toList()).get(0);
     }
 
     private Point toPoint(List<Double> coordinates) {

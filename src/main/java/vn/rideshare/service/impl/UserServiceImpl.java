@@ -2,23 +2,17 @@ package vn.rideshare.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.UpdateStatusRequest;
 import vn.rideshare.client.dto.user.*;
 import vn.rideshare.common.CommonException;
 import vn.rideshare.common.ErrorCode;
-import vn.rideshare.common.MailAction;
 import vn.rideshare.mapper.UserMapper;
-import vn.rideshare.model.EntityStatus;
 import vn.rideshare.model.User;
 import vn.rideshare.repository.UserRepository;
-import vn.rideshare.service.MailService;
 import vn.rideshare.service.UserService;
 
-import javax.mail.MessagingException;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,8 +22,6 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private UserMapper userMapper;
-    @Autowired
-    private MailService mailService;
 
     public UserDto saveUser(SaveUserRequest saveUserRequest) {
         try {
@@ -44,7 +36,7 @@ public class UserServiceImpl implements UserService {
             user = userRepository.save(user);
             return userMapper.toDto(user);
         } catch (Exception e) {
-            throw new CommonException(ErrorCode.INTERNAL_SYSTEM_ERROR);
+            throw new CommonException(e);
         }
     }
 
@@ -54,43 +46,42 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findById(updateUserRequest.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
             user = userMapper.toEntity(user, updateUserRequest);
             userRepository.save(user);
-            mailService.sendMail(user.getEmail(), MailAction.UPDATE_USER, user);
             return userMapper.toDto(user);
-        } catch (MessagingException | MailException | IOException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
-        } catch (CommonException e) {
-            throw e;
         }
     }
 
     @Override
     public boolean updateStatus(UpdateStatusRequest request) {
         try {
-            User user = userRepository.findById(request.getId()).get();
+            User user = userRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
             user.setStatus(request.getStatus());
-            user = userRepository.save(user);
-            if (request.isSendEmail()) {
-                MailAction action = request.getStatus() == EntityStatus.ACTIVE ? MailAction.UPDATE_USER_STATUS_ACTIVE : MailAction.UPDATE_USER_STATUS_INACTIVE;
-                mailService.sendMail(user.getEmail(), action, user);
-            }
+            userRepository.save(user);
             return true;
-        } catch (MessagingException | MailException | IOException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
-        } catch (CommonException e) {
-            throw e;
         }
     }
 
     @Override
-    public UserDto getUserByUid(FindUserByUidRequest findUserByUidRequest) {
-        User user = userRepository.findUserByUid(findUserByUidRequest.getUid()).orElse(null);
-        return userMapper.toDto(user);
+    public UserDto getUserByUid(FindUserByUidRequest request) {
+        try {
+            User user = userRepository.findUserByUid(request.getUid()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
+            return userMapper.toDto(user);
+        }catch (Exception e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
     public List<FindUserByTextResponse> findUsersByText(FindUserByTextRequest request) {
-        List<User> users = userRepository.findUsersByText(request.getText());
-        return userMapper.toFindByTextResponse(users);
+        try {
+            List<User> users = userRepository.findUsersByText(request.getText());
+            return userMapper.toFindByTextResponse(users);
+        }catch (Exception e){
+            throw new CommonException(e);
+        }
     }
 
     @Override
@@ -105,7 +96,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserById(FindByIdRequest request) {
-        User user = userRepository.findById(request.getId()).orElse(null);
-        return userMapper.toDto(user);
+        try {
+            User user = userRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
+            return userMapper.toDto(user);
+        }catch (Exception e){
+            throw new CommonException(e);
+        }
     }
 }

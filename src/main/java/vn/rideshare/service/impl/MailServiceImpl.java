@@ -10,6 +10,7 @@ import vn.rideshare.client.dto.ride.FindRideDetailResponse;
 import vn.rideshare.client.dto.ride.VehicleDto;
 import vn.rideshare.common.MailAction;
 import vn.rideshare.model.EntityStatus;
+import vn.rideshare.model.Ride;
 import vn.rideshare.model.User;
 import vn.rideshare.model.Vehicle;
 import vn.rideshare.service.MailService;
@@ -18,6 +19,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -35,7 +37,7 @@ public class MailServiceImpl implements MailService {
     public boolean sendMail(String to, MailAction action, Object data) throws MessagingException, MailException, IOException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-        helper.setFrom("phamtrunghieu.dev@outlook.com.vn");
+        helper.setFrom(FROM);
         helper.setTo(to);
         helper.setSubject(action.getEmailTitle());
         helper.setText(buildContent(action, data), true);
@@ -48,7 +50,7 @@ public class MailServiceImpl implements MailService {
         if (action.toString().contains("USER")) {
             User user = User.class.cast(data);
             FileInputStream fis = new FileInputStream("src/main/resources/template-user.html");
-            result = String.format(IOUtils.toString(fis, "UTF-8"),
+            result = String.format(IOUtils.toString(fis, StandardCharsets.UTF_8),
                     action.getContentTitle(),
                     action.getContentSmallTitle(),
                     user.getPhotoURL(),
@@ -64,14 +66,14 @@ public class MailServiceImpl implements MailService {
                     EMAIL_SUPPORT
             );
         } else {
-            FindRideDetailResponse ride = FindRideDetailResponse.class.cast(data);
+            Ride ride = Ride.class.cast(data);
             FileInputStream fis = new FileInputStream("src/main/resources/template-ride.html");
-            result = String.format(IOUtils.toString(fis, "UTF-8"),
+            result = String.format(IOUtils.toString(fis, StandardCharsets.UTF_8),
                     action.getContentTitle(),
                     action.getContentSmallTitle(),
                     convertStatus(ride.getStatus()),
-                    convertVehicle(ride.getVehicle()),
-                    convertDistance(ride.getDistance()),
+                    "FAKE VEHICLE",
+                    convertDistance(ride.getRoute().getDistance()),
                     convertLocalDateTime(ride.getStartTime()),
                     convertLocalDateTime(ride.getEndTime()),
                     convertCriterions(ride.getCriterions()),
@@ -104,7 +106,7 @@ public class MailServiceImpl implements MailService {
         return gender.equals("male") ? "Nam" : "Nữ";
     }
 
-    private String convertCriterions(List criterions) {
+    private String convertCriterions(List<String> criterions) {
         return String.join(", ", criterions);
     }
 
@@ -130,6 +132,9 @@ public class MailServiceImpl implements MailService {
             case "motorbike": {
                 type = "XE MÁY";
                 break;
+            }
+            default: {
+                type ="XE MÁY";
             }
         }
         return type;

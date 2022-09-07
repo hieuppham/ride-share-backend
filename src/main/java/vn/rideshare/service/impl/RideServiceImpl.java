@@ -2,25 +2,21 @@ package vn.rideshare.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.UpdateStatusRequest;
 import vn.rideshare.client.dto.ride.*;
 import vn.rideshare.common.CommonException;
 import vn.rideshare.common.ErrorCode;
-import vn.rideshare.common.MailAction;
 import vn.rideshare.mapper.RideMapper;
 import vn.rideshare.model.*;
 import vn.rideshare.model.route.Leg;
 import vn.rideshare.model.route.Route;
 import vn.rideshare.repository.RideRepository;
 import vn.rideshare.repository.UserRepository;
-import vn.rideshare.service.MailService;
 import vn.rideshare.service.RideService;
+import vn.rideshare.util.socket.SocketEvent;
 
-import javax.mail.MessagingException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,48 +31,38 @@ public class RideServiceImpl implements RideService {
     @Autowired
     private RideMapper rideMapper;
 
-    @Autowired
-    private MailService mailService;
-
     @Override
     public RideDto saveRide(SaveRideRequest request) {
         try {
             Ride ride = rideMapper.toEntity(request);
-            User user = userRepository.findById(request.getUserId()).get();
             ride.setId(null);
             ride.setPath(getPathFromRoute(ride.getRoute()));
             ride = rideRepository.save(ride);
-            mailService.sendMail(user.getEmail(), MailAction.CREATE_RIDE, rideMapper.toFindRideDetailResponse(ride, user));
             return rideMapper.toDto(ride);
-        } catch (MessagingException | MailException | IOException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
-        } catch (CommonException e) {
-            throw e;
         }
     }
 
     @Override
     public boolean updateRideStatus(UpdateStatusRequest request) {
         try {
-            Ride ride = rideRepository.findById(request.getId()).get();
-            User user = userRepository.findById(ride.getUserId()).get();
+            Ride ride = rideRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
             ride.setStatus(request.getStatus());
-            ride = rideRepository.save(ride);
-            if (request.isSendEmail()) {
-                MailAction action = request.getStatus() == EntityStatus.ACTIVE ? MailAction.UPDATE_RIDE_STATUS_ACTIVE : MailAction.UPDATE_RIDE_STATUS_INACTIVE;
-                mailService.sendMail(user.getEmail(), action, rideMapper.toFindRideDetailResponse(ride, user));
-            }
+            rideRepository.save(ride);
             return true;
-        } catch (MessagingException | MailException | IOException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
-        } catch (CommonException e) {
-            throw e;
         }
     }
 
     @Override
     public RideDto findRideById(FindByIdRequest request) {
-        return rideMapper.toDto(rideRepository.findById(request.getId()).orElse(null));
+        try {
+            return rideMapper.toDto(rideRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND)));
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
@@ -101,9 +87,18 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public FindRideDetailResponse findDetailById(FindByIdRequest request) {
-        Ride ride = rideRepository.findById(request.getId()).get();
-        User user = userRepository.findById(ride.getUserId()).get();
-        return rideMapper.toFindRideDetailResponse(ride, user);
+        try {
+            Ride ride = rideRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
+            User user = userRepository.findById(ride.getUserId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
+            return rideMapper.toFindRideDetailResponse(ride, user);
+        }catch (Exception e){
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public FindRidesResponse findSingleRideById(FindByIdRequest request) {
+        return rideRepository.findSingleRideById(request);
     }
 
     private Feature getPathFromRoute(Route route) {
@@ -131,5 +126,16 @@ public class RideServiceImpl implements RideService {
         properties.setDistance(leg.getDistance());
         path.setProperties(properties);
         return path;
+    }
+
+    private String getEvent(EntityStatus oldStatus, EntityStatus newStatus) {
+        String event = SocketEvent.NOTHING;
+        if ((oldStatus == EntityStatus.INACTIVE || oldStatus == EntityStatus.PENDING)
+                && newStatus == EntityStatus.ACTIVE) {
+            event = SocketEvent.RIDE_ADDED;
+        } else if (oldStatus == EntityStatus.ACTIVE & (newStatus == EntityStatus.INACTIVE || newStatus == EntityStatus.PENDING)) {
+            event = SocketEvent.RIDE_REMOVED;
+        }
+        return event;
     }
 }

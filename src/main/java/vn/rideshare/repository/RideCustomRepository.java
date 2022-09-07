@@ -1,5 +1,6 @@
 package vn.rideshare.repository;
 
+import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.ride.*;
 
 import java.util.List;
@@ -10,5 +11,7 @@ public interface RideCustomRepository {
      List<FindRidesResponse> findAllRides();
 
      List<FindRideDetailResponse> findRidesByUserId(String id);
+
+     FindRidesResponse findSingleRideById(FindByIdRequest request);
 
 }
