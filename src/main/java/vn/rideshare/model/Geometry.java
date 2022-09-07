@@ -11,5 +11,5 @@ import java.util.List;
 @NoArgsConstructor
 public class Geometry {
     private String type;
-    private List<Object> coordinates;
+    private List<List<Double>> coordinates;
 }

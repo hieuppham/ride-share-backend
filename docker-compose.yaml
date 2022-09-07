@@ -1,0 +1,13 @@
+version: "2.0"
+
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "127.0.0.1:27017:27017"
+  backend:
+    image: ride-share-be:latest
+    expose:
+      - 8080
+    ports:
+      - "127.0.0.1:8080:8080"

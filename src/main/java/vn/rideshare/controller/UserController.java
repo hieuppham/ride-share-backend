@@ -3,13 +3,12 @@ package vn.rideshare.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import vn.rideshare.dto.RequestUpdateStatusDto;
-import vn.rideshare.model.EntityStatus;
-import vn.rideshare.model.User;
+import vn.rideshare.client.dto.FindByIdRequest;
+import vn.rideshare.client.dto.UpdateStatusRequest;
+import vn.rideshare.client.dto.user.*;
 import vn.rideshare.service.UserService;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -17,28 +16,40 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping
-    public ResponseEntity<User> upsertUser(@RequestBody User user) {
-        return this.userService.upsertUser(user);
+    @PostMapping("/save")
+    public ResponseEntity<UserDto> saveUser(@RequestBody SaveUserRequest request) {
+        return ResponseEntity.ok().body(userService.saveUser(request));
     }
 
-    @PutMapping("/status")
-    public ResponseEntity<Boolean> updateStatus(@RequestBody RequestUpdateStatusDto request) {
-        return this.userService.updateStatus(request);
+    @PostMapping("/update")
+    public ResponseEntity<UserDto> updateUser(@RequestBody UpdateUserRequest request) {
+        return ResponseEntity.ok().body(userService.updateUser(request));
     }
 
-    @GetMapping("/admin")
-    public ResponseEntity<List<User>> getAllUser() {
-        return this.userService.getAllUser();
+    @PostMapping("/find-short-info-by-id")
+    public ResponseEntity<FindShortUserInfoResponse> findShortUserInfoById(@RequestBody FindByIdRequest request) {
+        return ResponseEntity.ok()
+                .body(userService.findShortUserInfoById(request));
     }
 
-    @GetMapping("/{uid}")
-    public ResponseEntity<User> getUserByUID(@PathVariable(name = "uid") String uid) {
-        return this.userService.getUserByUID(uid);
+    @PostMapping("/find-by-id")
+    public ResponseEntity<UserDto> findUserById(@RequestBody FindByIdRequest request) {
+        return ResponseEntity.ok().body(userService.getUserById(request));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<User>> searchUser(@RequestParam("what") String what){
-        return this.userService.searchUser(what);
+    @PostMapping("/update-status")
+    public ResponseEntity<Boolean> updateStatus(@RequestBody UpdateStatusRequest request) {
+        return ResponseEntity.ok().body(userService.updateStatus(request));
     }
+
+    @PostMapping("/find-by-uid")
+    public ResponseEntity<UserDto> findUserByUid(@RequestBody FindUserByUidRequest request) {
+        return ResponseEntity.ok().body(userService.getUserByUid(request));
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<FindUserByTextResponse>> searchUser(@RequestBody FindUserByTextRequest request){
+        return ResponseEntity.ok().body(userService.findUsersByText(request));
+    }
+
 }

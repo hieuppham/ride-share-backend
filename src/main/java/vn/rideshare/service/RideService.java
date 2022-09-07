@@ -1,50 +1,25 @@
 package vn.rideshare.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
-import vn.rideshare.dto.BoundRequestDto;
-import vn.rideshare.dto.RequestUpdateStatusDto;
-import vn.rideshare.dto.RideRequestDto;
-import vn.rideshare.dto.RideResponeDto;
-import vn.rideshare.model.Ride;
-import vn.rideshare.repository.RideRepository;
-import vn.rideshare.repository.impl.RideCustomRepository;
+import vn.rideshare.client.dto.FindByIdRequest;
+import vn.rideshare.client.dto.UpdateStatusRequest;
+import vn.rideshare.client.dto.ride.*;
 
 import java.util.List;
 
-@Repository
-public class RideService {
-    @Autowired
-    private RideRepository rideRepository;
+public interface RideService {
+    RideDto saveRide(SaveRideRequest request);
 
-    @Autowired
-    RideCustomRepository rideCustomRepository;
+    boolean updateRideStatus(UpdateStatusRequest request);
 
-    public ResponseEntity<Ride> createRide(Ride ride) {
-        return ResponseEntity.ok()
-                .body(this.rideRepository.save(ride));
-    }
+    RideDto findRideById(FindByIdRequest request);
 
-    public ResponseEntity<List<Ride>> getRidesByUid(String uid) {
-        return ResponseEntity.ok()
-                .body(this.rideRepository.getRidesByUid(uid));
-    }
+    List<FindRidesResponse> findRidesByBound(FindRidesByBoundRequest request);
 
-    public ResponseEntity<Boolean> updateStatus(RequestUpdateStatusDto request){
-        this.rideRepository.updateStatus(request.getId(), request.getStatus());
-        return ResponseEntity.ok()
-                .body(true);
-    }
+    List<FindRidesResponse> findAllRides();
 
-    public ResponseEntity<List<RideResponeDto>> getAllRides(Boolean active){
-        return ResponseEntity.ok()
-                .body(this.rideCustomRepository.getAllRides(active));
-    }
+    List<FindRideDetailResponse> findRidesByUserId(FindByIdRequest request);
 
-    public ResponseEntity<List<RideResponeDto>> getByBound(BoundRequestDto boundRequestDto){
-        return ResponseEntity.ok()
-                .body(this.rideCustomRepository.getByBound(boundRequestDto));
-    }
+    List<FindRidesAdminResponse> findAllRidesAdmin();
+
+    FindRideDetailResponse findDetailById(FindByIdRequest request);
 }

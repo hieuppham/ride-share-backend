@@ -1,0 +1,39 @@
+use ride-share;
+
+db.user.aggregate(
+    [
+        {
+            $project: {
+                uid: 1
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                uids: {$push: "$uid"}
+            }
+        }
+    ]
+);
+
+db.user.updateMany(
+  {},
+  [{ "$set": { "dob": { "$toDate": "$dob" } }}]
+);
+
+db.ride.updateMany(
+  {},
+  [{ "$set": { "startTime": { "$toDate": "$startTime" },  "endTime": { "$toDate": "$endTime" }}}]
+);
+
+db.ride.find({}).forEach(ride => {
+    var coordinates = [];
+    ride.route.legs[0].steps.forEach(step => {
+        coordinates.push(step.maneuver.location);
+    });
+    db.ride.updateOne(
+        {_id: ride._id},
+        {$set: {"path.geometry.coordinates": coordinates, "path.geometry.type": "Point"}}),
+        false,
+        true
+});
