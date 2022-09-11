@@ -17,10 +17,6 @@ import vn.rideshare.shared.CustomMongoTemplate;
 @EnableScheduling
 @SpringBootApplication
 public class RideShareBackendApplication {
-
-    @Value("${rt-server.host}")
-    private String host;
-    
     @Value("${rt-server.port}")
     private Integer port;
 
