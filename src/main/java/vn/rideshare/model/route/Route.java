@@ -8,12 +8,12 @@ import java.util.List;
 @Getter
 @Setter
 public class Route {
-    public boolean country_crossed;
-    public String weight_name;
-    public double weight;
-    public double duration;
-    public double distance;
-    public List<Leg> legs;
-    public String geometry;
+    private boolean country_crossed;
+    private String weight_name;
+    private double weight;
+    private double duration;
+    private double distance;
+    private List<Leg> legs;
+    private String geometry;
 }
 
