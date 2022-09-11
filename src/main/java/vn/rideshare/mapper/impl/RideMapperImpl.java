@@ -48,7 +48,7 @@ public class RideMapperImpl implements RideMapper {
 
     @Override
     public List<FindRidesAdminResponse> toFindRidesAdminResponse(List<Ride> entityList) {
-        List<FindRidesAdminResponse> rides = entityList.stream().map(ride -> {
+        return entityList.stream().map(ride -> {
             FindRidesAdminResponse response = new FindRidesAdminResponse();
             response.setId(ride.getId());
             response.setStartPointTitle(ride.getPath().getProperties().getStartPointTitle());
@@ -59,12 +59,11 @@ public class RideMapperImpl implements RideMapper {
             response.setDistance(ride.getRoute().getDistance());
             return response;
         }).collect(Collectors.toList());
-        return rides;
     }
 
     @Override
     public List<FindRidesByUserIdResponse> toFindRidesByUidResponse(List<Ride> entityList) {
-        List<FindRidesByUserIdResponse> rides = entityList.stream().map(ride -> {
+        return entityList.stream().map(ride -> {
             FindRidesByUserIdResponse response = new FindRidesByUserIdResponse();
             response.setId(ride.getId());
             response.setStartTime(ride.getStartTime());
@@ -74,7 +73,6 @@ public class RideMapperImpl implements RideMapper {
             response.setStatus(ride.getStatus());
             return response;
         }).collect(Collectors.toList());
-        return rides;
     }
 
     @Override
@@ -101,12 +99,12 @@ public class RideMapperImpl implements RideMapper {
         vehicleDto = user.getVehicles().stream().filter(v ->
                 v.getId() == ride.getVehicleId()
         ).map(v -> {
-            VehicleDto var = new VehicleDto();
-            var.setId(v.getId());
-            var.setType(v.getType());
-            var.setLpn(v.getLpn());
-            var.setName(v.getName());
-            return var;
+            VehicleDto vehicleDtoTemp = new VehicleDto();
+            vehicleDtoTemp.setId(v.getId());
+            vehicleDtoTemp.setType(v.getType());
+            vehicleDtoTemp.setLpn(v.getLpn());
+            vehicleDtoTemp.setName(v.getName());
+            return vehicleDtoTemp;
         }).findFirst().get();
         response.setVehicle(vehicleDto);
         return response;

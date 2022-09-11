@@ -8,21 +8,21 @@ import java.util.List;
 @Getter
 @Setter
 public class Intersection{
-    public List<Boolean> entry;
-    public List<Integer> bearings;
-    public double duration;
-    public MapboxStreetsV8 mapbox_streets_v8;
-    public boolean is_urban;
-    public int admin_index;
-    public int out;
-    public double weight;
-    public int geometry_index;
-    public List<Double> location;
-    public int in;
-    public double turn_weight;
-    public double turn_duration;
-    public boolean traffic_signal;
-    public List<Lane> lanes;
-    public List<String> classes;
-    public TollCollection toll_collection;
+    private List<Boolean> entry;
+    private List<Integer> bearings;
+    private double duration;
+    private MapboxStreetsV8 mapbox_streets_v8;
+    private boolean is_urban;
+    private int admin_index;
+    private int out;
+    private double weight;
+    private int geometry_index;
+    private List<Double> location;
+    private int in;
+    private double turn_weight;
+    private double turn_duration;
+    private boolean traffic_signal;
+    private List<Lane> lanes;
+    private List<String> classes;
+    private TollCollection toll_collection;
 }

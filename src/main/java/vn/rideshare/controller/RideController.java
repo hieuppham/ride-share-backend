@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.rideshare.client.dto.FindByIdRequest;
+import vn.rideshare.client.dto.ResponseBody;
 import vn.rideshare.client.dto.UpdateStatusRequest;
 import vn.rideshare.client.dto.ride.*;
 import vn.rideshare.service.RideService;
@@ -17,7 +18,7 @@ public class RideController {
     private RideService rideService;
 
     @PostMapping("/save")
-    public ResponseEntity<RideDto> saveRide(@RequestBody SaveRideRequest request) {
+    public ResponseEntity<ResponseBody> saveRide(@RequestBody SaveRideRequest request) {
         return ResponseEntity.ok().body(rideService.saveRide(request));
     }
 

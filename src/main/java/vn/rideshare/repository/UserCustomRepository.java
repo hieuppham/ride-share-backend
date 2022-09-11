@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface UserCustomRepository {
     List<User> findUsersByText(String text);
+    void findAndActivate();
 }
