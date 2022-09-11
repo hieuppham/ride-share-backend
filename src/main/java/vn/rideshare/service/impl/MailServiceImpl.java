@@ -33,6 +33,12 @@ public class MailServiceImpl implements MailService {
     private static final String EMAIL_SUPPORT = "phamtrunghieu6d@gmail.com";
     private static final String URL_WEB = "http://localhost:4200";
     private static final String FROM = "phamtrunghieu.dev@outlook.com.vn";
+    private static final String MOTORBIKE = "XE MÁY";
+    private static final String CAR = "Ô TÔ";
+
+    private static final String MALE = "Nam";
+
+    private static final String FEMALE = "Nữ";
 
     public boolean sendMail(String to, MailAction action, Object data) throws MessagingException, MailException, IOException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -91,7 +97,7 @@ public class MailServiceImpl implements MailService {
     }
 
     private String convertVehicleType(String type) {
-        return type.equals("car") ? "Ô TÔ" : "XE MÁY";
+        return type.equals("car") ? CAR : MOTORBIKE;
     }
 
     private String convertVehicle(VehicleDto vehicleDto) {
@@ -103,7 +109,7 @@ public class MailServiceImpl implements MailService {
     }
 
     private String convertGender(String gender) {
-        return gender.equals("male") ? "Nam" : "Nữ";
+        return gender.equals("male") ? MALE : FEMALE;
     }
 
     private String convertCriterions(List<String> criterions) {
@@ -126,15 +132,15 @@ public class MailServiceImpl implements MailService {
     private String convertType(String type) {
         switch (type) {
             case "car": {
-                type = "Ô TÔ";
+                type = CAR;
                 break;
             }
             case "motorbike": {
-                type = "XE MÁY";
+                type = MOTORBIKE;
                 break;
             }
             default: {
-                type ="XE MÁY";
+                type =MOTORBIKE;
             }
         }
         return type;

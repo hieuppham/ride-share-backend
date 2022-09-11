@@ -7,7 +7,7 @@ import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.UpdateStatusRequest;
 import vn.rideshare.client.dto.user.*;
 import vn.rideshare.common.CommonException;
-import vn.rideshare.common.ErrorCode;
+import vn.rideshare.common.ResponseCode;
 import vn.rideshare.mapper.UserMapper;
 import vn.rideshare.model.User;
 import vn.rideshare.repository.UserRepository;
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UpdateUserRequest updateUserRequest) {
         try {
-            User user = userRepository.findById(updateUserRequest.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
+            User user = userRepository.findById(updateUserRequest.getId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
             user = userMapper.toEntity(user, updateUserRequest);
             userRepository.save(user);
             return userMapper.toDto(user);
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean updateStatus(UpdateStatusRequest request) {
         try {
-            User user = userRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
+            User user = userRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
             user.setStatus(request.getStatus());
             userRepository.save(user);
             return true;
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserByUid(FindUserByUidRequest request) {
         try {
-            User user = userRepository.findUserByUid(request.getUid()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
+            User user = userRepository.findUserByUid(request.getUid()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
             return userMapper.toDto(user);
         }catch (Exception e) {
             throw new CommonException(e);
@@ -97,7 +97,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(FindByIdRequest request) {
         try {
-            User user = userRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND));
+            User user = userRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
             return userMapper.toDto(user);
         }catch (Exception e){
             throw new CommonException(e);

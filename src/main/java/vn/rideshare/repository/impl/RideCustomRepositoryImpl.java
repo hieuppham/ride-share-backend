@@ -3,9 +3,11 @@ package vn.rideshare.repository.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Box;
 import org.springframework.data.geo.Point;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.core.query.UpdateDefinition;
 import org.springframework.stereotype.Repository;
 import vn.rideshare.client.dto.FindByIdRequest;
 import vn.rideshare.client.dto.ride.*;
@@ -13,22 +15,34 @@ import vn.rideshare.model.EntityStatus;
 import vn.rideshare.model.Ride;
 import vn.rideshare.model.User;
 import vn.rideshare.repository.RideCustomRepository;
+import vn.rideshare.shared.CustomMongoTemplate;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
 public class RideCustomRepositoryImpl implements RideCustomRepository {
+    private static final String STATUS = "status";
+    private static final String ENDTIME = "endTime";
+    private static final String LAST_MODIFIED_DATE = "lastModifiedDate";
+    private static final String USER_ID = "userId";
+    private static final String CLASS = "_class";
+    private static final String ROUTE = "route";
+    private static final String VEHICLE_ID = "vehicleId";
+    private static final long PENDING_TIME = 600l;
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private CustomMongoTemplate mongoTemplate;
 
     @Override
     public List<FindRidesResponse> findRidesByBound(FindRidesByBoundRequest request) {
         List<AggregationOperation> aggregations = new ArrayList<>();
 
         Criteria criteria = new Criteria();
-        criteria.and("status").is(EntityStatus.ACTIVE);
+        criteria.and(STATUS).is(EntityStatus.ACTIVE)
+                .and(ENDTIME).gt(LocalDateTime.now());
         criteria.and("path.geometry.coordinates")
                 .within(new Box(
                         toPoint(request.getUpperRight()),
@@ -40,9 +54,9 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
 
         AggregationOperation project = new ProjectionOperation().andExclude(
                 "uid",
-                "route",
-                "vehicleId",
-                "_class");
+                ROUTE,
+                VEHICLE_ID,
+                CLASS);
         aggregations.add(project);
         return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRidesResponse.class)
                 .getMappedResults().stream().map(this::fillMissingFields).collect(Collectors.toList());
@@ -53,15 +67,16 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
         List<AggregationOperation> aggregations = new ArrayList<>();
 
         Criteria criteria = new Criteria();
-        criteria.and("status").is(EntityStatus.ACTIVE);
+        criteria.and(STATUS).is(EntityStatus.ACTIVE)
+                .and(ENDTIME).gt(LocalDateTime.now());
         MatchOperation match = new MatchOperation(criteria);
         aggregations.add(match);
 
         AggregationOperation project = new ProjectionOperation().andExclude(
-                "userId",
-                "route",
-                "vehicleId",
-                "_class");
+                USER_ID,
+                ROUTE,
+                VEHICLE_ID,
+                CLASS);
         aggregations.add(project);
         return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRidesResponse.class)
                 .getMappedResults().stream().map(this::fillMissingFields).collect(Collectors.toList());
@@ -72,15 +87,15 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
         List<AggregationOperation> aggregations = new ArrayList<>();
 
         Criteria criteria = new Criteria();
-        criteria.and("userId").is(id);
+        criteria.and(USER_ID).is(id);
         MatchOperation match = new MatchOperation(criteria);
         aggregations.add(match);
 
         AggregationOperation project = new ProjectionOperation().andExclude(
-                "userId",
-                "route",
-                "vehicleId",
-                "_class");
+                USER_ID,
+                ROUTE,
+                VEHICLE_ID,
+                CLASS);
         aggregations.add(project);
         return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRideDetailResponse.class)
                 .getMappedResults().stream().map(this::fillMissingFieldsDetail).collect(Collectors.toList());
@@ -90,18 +105,43 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
     public FindRidesResponse findSingleRideById(FindByIdRequest request) {
         List<AggregationOperation> aggregations = new ArrayList<>();
 
-        Criteria criteria = new Criteria("_id").is(request.getId());
+        Criteria criteria = new Criteria("_id").is(request.getId()).and(ENDTIME).gt(LocalDateTime.now());
         MatchOperation match = new MatchOperation(criteria);
         aggregations.add(match);
 
         AggregationOperation project = new ProjectionOperation().andExclude(
-                "userId",
-                "route",
-                "vehicleId",
-                "_class");
+                USER_ID,
+                ROUTE,
+                VEHICLE_ID,
+                CLASS);
         aggregations.add(project);
         return mongoTemplate.aggregate(new TypedAggregation<>(Ride.class, aggregations), FindRidesResponse.class)
                 .getMappedResults().stream().map(this::fillMissingFields).collect(Collectors.toList()).get(0);
+    }
+
+    @Override
+    public Ride existOneActiveRideByUserId(String id) {
+        return mongoTemplate.findOne(Query.query(
+                        Criteria.where(USER_ID).is(id)
+                                .and(STATUS).is(EntityStatus.ACTIVE)
+                                .and(ENDTIME).gt(LocalDateTime.now())),
+                Ride.class);
+    }
+
+    @Override
+    public void findAndActivate() {
+        Query query = Query.query(Criteria.where(STATUS).is(EntityStatus.PENDING)
+                .and(LAST_MODIFIED_DATE).lte(Instant.now().minusSeconds(PENDING_TIME)));
+        UpdateDefinition update = Update.update(STATUS, EntityStatus.ACTIVE).set(LAST_MODIFIED_DATE, Instant.now());
+        mongoTemplate.findAndModify(query, update, Ride.class);
+    }
+
+    @Override
+    public void findAndInactivate() {
+        Query query = Query.query(Criteria.where(STATUS).is(EntityStatus.ACTIVE)
+                .and(ENDTIME).lte(LocalDateTime.now()));
+        UpdateDefinition update = Update.update(STATUS, EntityStatus.INACTIVE).set(LAST_MODIFIED_DATE, Instant.now());
+        mongoTemplate.findAndModify(query, update, Ride.class);
     }
 
     private Point toPoint(List<Double> coordinates) {

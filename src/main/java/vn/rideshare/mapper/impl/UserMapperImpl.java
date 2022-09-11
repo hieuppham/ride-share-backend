@@ -70,17 +70,17 @@ public class UserMapperImpl implements UserMapper {
 
     @Override
     public List<FindUserByTextResponse> toFindByTextResponse(List<User> users) {
-       return users.stream()
-               .map(userEntity -> {
-                   return modelMapper.map(userEntity, FindUserByTextResponse.class);
-               }).collect(Collectors.toList());
+        return users.stream()
+                .map(userEntity ->
+                        modelMapper.map(userEntity, FindUserByTextResponse.class)
+                ).collect(Collectors.toList());
     }
 
     @Override
     public List<FindUsersAdminResponse> toFindUsersAdminResponse(List<User> users) {
-        return users.stream().map(userEntity -> {
-            return modelMapper.map(userEntity, FindUsersAdminResponse.class);
-        }).collect(Collectors.toList());
+        return users.stream().map(userEntity ->
+                modelMapper.map(userEntity, FindUsersAdminResponse.class)
+        ).collect(Collectors.toList());
     }
 
     @Override

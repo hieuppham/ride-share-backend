@@ -8,8 +8,8 @@ import java.util.List;
 @Setter
 @Getter
 public class Lane{
-    public List<String> indications;
-    public boolean valid;
-    public boolean active;
-    public String valid_indication;
+    private List<String> indications;
+    private boolean valid;
+    private boolean active;
+    private String valid_indication;
 }
