@@ -6,5 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TollCollection{
-    public String type;
+    private String type;
 }

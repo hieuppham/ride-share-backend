@@ -14,13 +14,13 @@ public class CommonException extends RuntimeException {
         this.message = message;
     }
 
-    public CommonException(ErrorCode e) {
+    public CommonException(ResponseCode e) {
         this.code = e.getCode();
         this.message = e.getMessage();
     }
 
     public CommonException(Exception e){
-        this.code = ErrorCode.INTERNAL_SYSTEM_ERROR.getCode();
+        this.code = ResponseCode.INTERNAL_SYSTEM_ERROR.getCode();
         this.message = e.getMessage();
     }
 }
