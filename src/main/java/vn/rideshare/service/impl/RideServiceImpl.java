@@ -2,27 +2,24 @@ package vn.rideshare.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import vn.rideshare.client.dto.FindByIdRequest;
+import vn.rideshare.client.dto.ResponseBody;
 import vn.rideshare.client.dto.UpdateStatusRequest;
 import vn.rideshare.client.dto.ride.*;
 import vn.rideshare.common.CommonException;
-import vn.rideshare.common.ErrorCode;
-import vn.rideshare.common.MailAction;
+import vn.rideshare.common.ResponseCode;
 import vn.rideshare.mapper.RideMapper;
 import vn.rideshare.model.*;
 import vn.rideshare.model.route.Leg;
 import vn.rideshare.model.route.Route;
 import vn.rideshare.repository.RideRepository;
 import vn.rideshare.repository.UserRepository;
-import vn.rideshare.service.MailService;
 import vn.rideshare.service.RideService;
 
-import javax.mail.MessagingException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class RideServiceImpl implements RideService {
@@ -35,48 +32,43 @@ public class RideServiceImpl implements RideService {
     @Autowired
     private RideMapper rideMapper;
 
-    @Autowired
-    private MailService mailService;
-
     @Override
-    public RideDto saveRide(SaveRideRequest request) {
+    public ResponseBody saveRide(SaveRideRequest request) {
         try {
-            Ride ride = rideMapper.toEntity(request);
-            User user = userRepository.findById(request.getUserId()).get();
-            ride.setId(null);
-            ride.setPath(getPathFromRoute(ride.getRoute()));
-            ride = rideRepository.save(ride);
-            mailService.sendMail(user.getEmail(), MailAction.CREATE_RIDE, rideMapper.toFindRideDetailResponse(ride, user));
-            return rideMapper.toDto(ride);
-        } catch (MessagingException | MailException | IOException e) {
+            Ride existRide =rideRepository.existOneActiveRideByUserId(request.getUserId());
+            if (existRide  != null && !Objects.equals(request.getId(), existRide.getId())) {
+                return new ResponseBody(ResponseCode.ONE_RIDE_ACTIVE);
+            } else {
+                Ride ride = rideMapper.toEntity(request);
+                ride.setPath(getPathFromRoute(ride.getRoute()));
+                ride = rideRepository.save(ride);
+                return new ResponseBody(ResponseCode.SUCCESS,
+                        rideMapper.toDto(ride));
+            }
+        } catch (Exception e) {
             throw new CommonException(e);
-        } catch (CommonException e) {
-            throw e;
         }
     }
 
     @Override
     public boolean updateRideStatus(UpdateStatusRequest request) {
         try {
-            Ride ride = rideRepository.findById(request.getId()).get();
-            User user = userRepository.findById(ride.getUserId()).get();
+            Ride ride = rideRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
             ride.setStatus(request.getStatus());
-            ride = rideRepository.save(ride);
-            if (request.isSendEmail()) {
-                MailAction action = request.getStatus() == EntityStatus.ACTIVE ? MailAction.UPDATE_RIDE_STATUS_ACTIVE : MailAction.UPDATE_RIDE_STATUS_INACTIVE;
-                mailService.sendMail(user.getEmail(), action, rideMapper.toFindRideDetailResponse(ride, user));
-            }
+            rideRepository.save(ride);
             return true;
-        } catch (MessagingException | MailException | IOException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
-        } catch (CommonException e) {
-            throw e;
         }
     }
 
     @Override
     public RideDto findRideById(FindByIdRequest request) {
-        return rideMapper.toDto(rideRepository.findById(request.getId()).orElse(null));
+        try {
+            return rideMapper.toDto(rideRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND)));
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
@@ -101,9 +93,18 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public FindRideDetailResponse findDetailById(FindByIdRequest request) {
-        Ride ride = rideRepository.findById(request.getId()).get();
-        User user = userRepository.findById(ride.getUserId()).get();
-        return rideMapper.toFindRideDetailResponse(ride, user);
+        try {
+            Ride ride = rideRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
+            User user = userRepository.findById(ride.getUserId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
+            return rideMapper.toFindRideDetailResponse(ride, user);
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public FindRidesResponse findSingleRideById(FindByIdRequest request) {
+        return rideRepository.findSingleRideById(request);
     }
 
     private Feature getPathFromRoute(Route route) {
@@ -114,13 +115,13 @@ public class RideServiceImpl implements RideService {
         Leg leg = route.getLegs().get(0);
         leg.getSteps()
                 .stream()
-                .forEach(step -> {
+                .forEach(step ->
                     step.getIntersections()
                             .stream()
-                            .forEach(intersection -> {
-                                coordinates.add(intersection.getLocation());
-                            });
-                });
+                            .forEach(intersection ->
+                                coordinates.add(intersection.getLocation())
+                            )
+                );
         geometry.setCoordinates(coordinates);
         geometry.setType("LineString");
         path.setGeometry(geometry);

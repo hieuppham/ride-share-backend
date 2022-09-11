@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class SaveRideRequest {
+    private String id;
     private String userId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;

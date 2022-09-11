@@ -1,13 +1,14 @@
 package vn.rideshare.service;
 
 import vn.rideshare.client.dto.FindByIdRequest;
+import vn.rideshare.client.dto.ResponseBody;
 import vn.rideshare.client.dto.UpdateStatusRequest;
 import vn.rideshare.client.dto.ride.*;
 
 import java.util.List;
 
 public interface RideService {
-    RideDto saveRide(SaveRideRequest request);
+    ResponseBody saveRide(SaveRideRequest request);
 
     boolean updateRideStatus(UpdateStatusRequest request);
 
@@ -22,4 +23,6 @@ public interface RideService {
     List<FindRidesAdminResponse> findAllRidesAdmin();
 
     FindRideDetailResponse findDetailById(FindByIdRequest request);
+
+    FindRidesResponse findSingleRideById(FindByIdRequest request);
 }
