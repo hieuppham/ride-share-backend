@@ -1,0 +1,59 @@
+package vn.rideshare.util.events;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.stereotype.Component;
+import vn.rideshare.common.CommonException;
+import vn.rideshare.common.MailAction;
+import vn.rideshare.common.ResponseCode;
+import vn.rideshare.model.EntityStatus;
+import vn.rideshare.model.Ride;
+import vn.rideshare.model.User;
+import vn.rideshare.repository.UserRepository;
+import vn.rideshare.service.MailService;
+import vn.rideshare.shared.AfterFindAndModifyEvent;
+import vn.rideshare.shared.FindAndModifyEventListener;
+import vn.rideshare.util.socket.ServerSocketModule;
+import vn.rideshare.util.socket.SocketEvent;
+import vn.rideshare.util.socket.SocketMessage;
+
+import javax.mail.MessagingException;
+import java.io.IOException;
+
+@Component
+public class RideFindAndModifyEventListener extends FindAndModifyEventListener<Ride> {
+    @Autowired
+    private ServerSocketModule socketModule;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private MailService mailService;
+
+    @Override
+    public void onAfterFindAndModify(AfterFindAndModifyEvent<Ride> event) {
+        try {
+            super.onAfterFindAndModify(event);
+            Ride ride = event.getSource();
+            SocketMessage message = new SocketMessage(ride.getId(), ride.getStatus().toString());
+            socketModule.sendMessage(getEvent(ride.getStatus()), message);
+            User user = userRepository.findById(ride.getUserId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
+            mailService.sendMail(user.getEmail(), MailAction.UPDATE_RIDE, ride);
+        } catch (MailException | MessagingException | IOException e) {
+            throw new CommonException(e);
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
+    private String getEvent(EntityStatus status) {
+        String result;
+        if (status == EntityStatus.ACTIVE) {
+            result = SocketEvent.RIDE_ADDED;
+        } else if (status == EntityStatus.INACTIVE) {
+            result = SocketEvent.RIDE_REMOVED;
+        } else {
+            result = SocketEvent.NOTHING;
+        }
+        return result;
+    }
+}
