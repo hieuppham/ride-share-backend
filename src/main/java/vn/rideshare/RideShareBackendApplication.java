@@ -24,6 +24,11 @@ public class RideShareBackendApplication {
     public SocketIOServer socketIOServer() {
         Configuration config = new Configuration();
         config.setPort(port);
+        System.out.println("==================================");
+        System.out.println("SOCKET HOST: " + config.getHostname());
+        System.out.println("SOCKET PORT: " + config.getPort());
+        System.out.println("==================================");
+
         return new SocketIOServer(config);
     }
 
