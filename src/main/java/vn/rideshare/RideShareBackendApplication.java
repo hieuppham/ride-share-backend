@@ -20,13 +20,13 @@ public class RideShareBackendApplication {
 
     @Value("${rt-server.host}")
     private String host;
+    
     @Value("${rt-server.port}")
     private Integer port;
 
     @Bean
     public SocketIOServer socketIOServer() {
         Configuration config = new Configuration();
-        config.setHostname(host);
         config.setPort(port);
         return new SocketIOServer(config);
     }
@@ -41,7 +41,6 @@ public class RideShareBackendApplication {
         System.out.println("=================================================");
         System.out.println("APP: " + env.getProperty("spring.application.name"));
         System.out.println("PROFILE: " + env.getProperty("spring.profiles.active"));
-
         System.out.println("=================================================");
     }
 
