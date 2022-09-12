@@ -17,6 +17,9 @@ import vn.rideshare.shared.CustomMongoTemplate;
 @EnableScheduling
 @SpringBootApplication
 public class RideShareBackendApplication {
+    @Value("rt-server.host")
+    private String host;
+
     @Value("${rt-server.port}")
     private Integer port;
 
@@ -34,8 +37,10 @@ public class RideShareBackendApplication {
 
     public static void main(String[] args) {
         Environment env = SpringApplication.run(RideShareBackendApplication.class, args).getEnvironment();
+        System.out.println("=================================================");
         System.out.println("APP: " + env.getProperty("spring.application.name"));
-        System.out.println("PROFILE: " + env.getActiveProfiles());
+        System.out.println("PROFILE: " + env.getProperty("spring.profiles.active"));
+        System.out.println("=================================================");
     }
 
 }
