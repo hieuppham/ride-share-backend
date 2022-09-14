@@ -23,7 +23,7 @@ public class RideController {
     }
 
     @PostMapping("/update-status")
-    public ResponseEntity<Boolean> updateStatus(@RequestBody UpdateStatusRequest request) {
+    public ResponseEntity<ResponseBody> updateStatus(@RequestBody UpdateStatusRequest request) {
         return ResponseEntity.ok()
                 .body(rideService.updateRideStatus(request));
     }
