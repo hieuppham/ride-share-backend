@@ -35,7 +35,7 @@ public class TestSendMail {
         user.setDob(new Date());
         user.setPhotoURL("https://lh3.googleusercontent.com/a-/AFdZucqGaADi0X0O81rbWWNSXgqmiG5_ErNecZ7C5wVsbg=s96-c");
         user.setGender("male");
-        assertDoesNotThrow(() -> this.mailServiceImpl.sendMail("phamtrunghieu.dev@gmail.com", MailAction.UPDATE_USER, user));
+//        assertDoesNotThrow(() -> this.mailServiceImpl.sendMail("phamtrunghieu.dev@gmail.com", MailAction.UPDATE_USER, user));
     }
 
     @Test

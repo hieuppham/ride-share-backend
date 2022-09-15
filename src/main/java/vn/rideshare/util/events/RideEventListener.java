@@ -1,10 +1,8 @@
 package vn.rideshare.util.events;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.mapping.event.*;
-import org.springframework.mail.MailException;
 import org.springframework.stereotype.Component;
 import vn.rideshare.common.CommonException;
 import vn.rideshare.common.MailAction;
@@ -17,9 +15,6 @@ import vn.rideshare.service.MailService;
 import vn.rideshare.util.socket.ServerSocketModule;
 import vn.rideshare.util.socket.SocketEvent;
 import vn.rideshare.util.socket.SocketMessage;
-
-import javax.mail.MessagingException;
-import java.io.IOException;
 
 @Component
 public class RideEventListener extends AbstractMongoEventListener<Ride> {
@@ -54,9 +49,9 @@ public class RideEventListener extends AbstractMongoEventListener<Ride> {
             SocketMessage message = new SocketMessage(ride.getId(), ride.getStatus().toString());
             socketModule.sendMessage(getEvent(oldStatus, ride.getStatus()), message);
             User user = userRepository.findById(ride.getUserId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
-            mailService.sendMail(user.getEmail(), MailAction.UPDATE_RIDE, ride);
-        } catch (MailException | MessagingException | IOException e) {
-            throw new CommonException(e);
+            mailService.sendMail(MailAction.UPDATE_RIDE, ride, user);
+        } catch (CommonException e) {
+            throw e;
         } catch (Exception e) {
             throw new CommonException(e);
         }

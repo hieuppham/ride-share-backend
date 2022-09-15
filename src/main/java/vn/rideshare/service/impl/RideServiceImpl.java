@@ -65,13 +65,15 @@ public class RideServiceImpl implements RideService {
     public ResponseBody updateRideStatus(UpdateStatusRequest request) {
         try {
             Ride ride = rideRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
-            LocalDateTime startTime = ride.getStartTime();
-            LocalDateTime endTime = ride.getEndTime();
-            if (!LocalDateTime.now().plusMinutes(PREPARE_TIME_REQUIRE).isBefore(startTime)) {
-                throw new CommonException(ResponseCode.START_TIME_MUST_BE_AFTER_10_MINUTES);
-            }
-            if (!startTime.isBefore(endTime)) {
-                throw new CommonException(ResponseCode.START_TIME_MUST_BE_AFTER_END_TIME);
+            if (request.getStatus().equals(EntityStatus.ACTIVE) || request.getStatus().equals(EntityStatus.PENDING)) {
+                LocalDateTime startTime = ride.getStartTime();
+                LocalDateTime endTime = ride.getEndTime();
+                if (!LocalDateTime.now().plusMinutes(PREPARE_TIME_REQUIRE).isBefore(startTime)) {
+                    throw new CommonException(ResponseCode.START_TIME_MUST_BE_AFTER_10_MINUTES);
+                }
+                if (!startTime.isBefore(endTime)) {
+                    throw new CommonException(ResponseCode.START_TIME_MUST_BE_AFTER_END_TIME);
+                }
             }
             ride.setStatus(request.getStatus());
             rideRepository.save(ride);
