@@ -23,9 +23,7 @@ public class UserFindAndModifyEventListener extends FindAndModifyEventListener<U
         try {
             super.onAfterFindAndModify(event);
             User user = event.getSource();
-            mailService.sendMail(user.getEmail(), MailAction.UPDATE_USER, user);
-        } catch (MailException | MessagingException | IOException e) {
-            throw new CommonException(e);
+            mailService.sendMail(MailAction.UPDATE_USER, user);
         } catch (Exception e) {
             throw new CommonException(e);
         }

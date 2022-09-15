@@ -10,7 +10,7 @@ import java.util.List;
 public interface RideService {
     ResponseBody saveRide(SaveRideRequest request);
 
-    boolean updateRideStatus(UpdateStatusRequest request);
+    ResponseBody updateRideStatus(UpdateStatusRequest request);
 
     RideDto findRideById(FindByIdRequest request);
 
