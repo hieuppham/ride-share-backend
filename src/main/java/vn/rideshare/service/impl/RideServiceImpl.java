@@ -68,6 +68,9 @@ public class RideServiceImpl implements RideService {
             if (request.getStatus().equals(EntityStatus.ACTIVE) || request.getStatus().equals(EntityStatus.PENDING)) {
                 LocalDateTime startTime = ride.getStartTime();
                 LocalDateTime endTime = ride.getEndTime();
+                if (rideRepository.existOneActiveRideByUserId(ride.getUserId()) != null) {
+                    throw new CommonException(ResponseCode.ONE_RIDE_ACTIVE);
+                }
                 if (!LocalDateTime.now().plusMinutes(PREPARE_TIME_REQUIRE).isBefore(startTime)) {
                     throw new CommonException(ResponseCode.START_TIME_MUST_BE_AFTER_10_MINUTES);
                 }
