@@ -105,3 +105,78 @@
     }
   }
 ]
+
+
+function query(data) {
+    let result = [];
+    const userIds = ["6325325b0cfa2ac9e28a7c39", "6325325b0cfa2ac9e28a7c3c", "6325325b0cfa2ac9e28a7c41",
+        "6325325b0cfa2ac9e28a7c44", "6325325b0cfa2ac9e28a7c49", "6325325b0cfa2ac9e28a7c4c",
+        "6325325b0cfa2ac9e28a7c53", "6325325b0cfa2ac9e28a7c54", "6325325b0cfa2ac9e28a7c56",
+        "6325325b0cfa2ac9e28a7c58", "6325325b0cfa2ac9e28a7c5c", "6325325b0cfa2ac9e28a7c5e",
+        "6325325b0cfa2ac9e28a7c5f", "6325325b0cfa2ac9e28a7c63", "632541c30cfa2ac9e28a7c6f",
+        "632541c30cfa2ac9e28a7c72", "632541c30cfa2ac9e28a7c74", "632542010cfa2ac9e28a7c75",
+        "632542010cfa2ac9e28a7c76", "632542010cfa2ac9e28a7c79", "6325511a0cfa2ac9e28a7c83",
+        "6325511a0cfa2ac9e28a7c84", "6325511a0cfa2ac9e28a7c87", "6325511a0cfa2ac9e28a7c83",
+        "6325511a0cfa2ac9e28a7c84", "6325511a0cfa2ac9e28a7c87"
+    ];
+    data.forEach(route => {
+        let index = data.indexOf(route);
+        let coordinates = [];
+        let startPointTitle;
+        let endPointTitle;
+        let distance;
+
+        let leg = route.legs[0];
+
+        leg.steps.forEach(
+            step => {
+                step.intersections
+                    .forEach(
+                        inter => {
+                            coordinates
+                                .push(
+                                    inter
+                                    .location
+                                );
+                        });
+            });
+        let summary = leg
+            .summary.split(",");
+        startPointTitle =
+            summary[0];
+
+        endPointTitle = summary[
+            1];
+        distance = leg.distance;
+
+        let path = {
+            type: "Feature",
+            geometry: {
+                type: "LineString",
+                coordinates: coordinates
+            },
+            properties: {
+                startPointTitle: startPointTitle,
+                endPointTitle: endPointTitle,
+                distance: distance
+            }
+        };
+
+        let ride = {
+            userId: userIds[index],
+            startTime: new Date(),
+            endTime: new Date(),
+            vehicleId: 0,
+            route: route,
+            criterions: ["Không hút thuốc", "Không thú cưng"],
+            path: path,
+            note: "Đón bạn tại điểm A, hoặc điểm B",
+            status: "PENDING",
+            createdDate: new Date(),
+            lastModifiedDate: new Date()
+        };
+
+        result.push(ride);
+    });
+    return result;
+}

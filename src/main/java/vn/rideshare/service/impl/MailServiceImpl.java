@@ -43,13 +43,15 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public boolean sendMail(MailAction action, Ride ride, User user) throws MessagingException, MailException, IOException {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-        helper.setFrom(FROM);
-        helper.setTo(user.getEmail());
-        helper.setSubject(action.getEmailTitle());
-        helper.setText(buildContent(action, ride, user), true);
-//        javaMailSender.send(helper.getMimeMessage());
+        if (ride.getStatus().equals(EntityStatus.ACTIVE) || ride.getStatus().equals(EntityStatus.INACTIVE) || ride.getStatus().equals(EntityStatus.EXPIRED)) {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+            helper.setFrom(FROM);
+            helper.setTo(user.getEmail());
+            helper.setSubject(action.getEmailTitle());
+            helper.setText(buildContent(action, ride, user), true);
+            javaMailSender.send(helper.getMimeMessage());
+        }
         return true;
     }
 
@@ -168,7 +170,7 @@ public class MailServiceImpl implements MailService {
                 break;
             }
             case INACTIVE: {
-                result = "Không hoạt động";
+                result = "Ngừng hoạt động";
                 break;
             }
             case UNKNOWN: {
@@ -181,6 +183,14 @@ public class MailServiceImpl implements MailService {
             }
             case PENDING: {
                 result = "Chờ phê duyệt";
+                break;
+            }
+            case PREPARE: {
+                result = "Sắp bắt đầu";
+                break;
+            }
+            case DISABLE: {
+                result = "Vô hiệu hóa";
                 break;
             }
             default: {

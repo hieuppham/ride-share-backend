@@ -44,9 +44,15 @@ public class RideFindAndModifyEventListener extends FindAndModifyEventListener<R
     private String getEvent(EntityStatus status) {
         String result;
         if (status == EntityStatus.ACTIVE) {
-            result = SocketEvent.RIDE_ADDED;
+            result = SocketEvent.RIDE_ACTIVATED;
+        } else if (status == EntityStatus.PREPARE) {
+            result = SocketEvent.RIDE_PREPARED;
         } else if (status == EntityStatus.INACTIVE) {
-            result = SocketEvent.RIDE_REMOVED;
+            result = SocketEvent.RIDE_INACTIVATED;
+        } else if (status == EntityStatus.EXPIRED) {
+            result = SocketEvent.RIDE_EXPIRED;
+        } else if (status == EntityStatus.DISABLE) {
+            result = SocketEvent.RIDE_DISABLED;
         } else {
             result = SocketEvent.NOTHING;
         }

@@ -17,7 +17,11 @@ public interface RideCustomRepository {
 
      Ride existOneActiveRideByUserId(String id);
 
+     void findAndPrepare();
+
      void findAndActivate();
 
-     void findAndInactivate();
+     void findAndExpire();
+
+     void findAndDisable();
 }

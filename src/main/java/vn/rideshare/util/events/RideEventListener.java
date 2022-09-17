@@ -60,10 +60,16 @@ public class RideEventListener extends AbstractMongoEventListener<Ride> {
     private String getEvent(EntityStatus oldStatus, EntityStatus newStatus) {
         String event = SocketEvent.NOTHING;
         if ((oldStatus == EntityStatus.INACTIVE || oldStatus == EntityStatus.PENDING)
+                && newStatus == EntityStatus.PREPARE) {
+            event = SocketEvent.RIDE_PREPARED;
+        } else if ((oldStatus == EntityStatus.INACTIVE || oldStatus == EntityStatus.PENDING)
                 && newStatus == EntityStatus.ACTIVE) {
-            event = SocketEvent.RIDE_ADDED;
-        } else if (oldStatus == EntityStatus.ACTIVE && (newStatus == EntityStatus.INACTIVE || newStatus == EntityStatus.PENDING)) {
-            event = SocketEvent.RIDE_REMOVED;
+            event = SocketEvent.RIDE_ACTIVATED;
+        } else if (oldStatus == EntityStatus.ACTIVE &&
+                (newStatus == EntityStatus.INACTIVE || newStatus == EntityStatus.PENDING)) {
+            event = SocketEvent.RIDE_INACTIVATED;
+        }else if (newStatus == EntityStatus.PENDING){
+            event = SocketEvent.RIDE_INACTIVATED;
         }
         return event;
     }

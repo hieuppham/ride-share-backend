@@ -26,13 +26,14 @@ import java.util.stream.Collectors;
 @Repository
 public class RideCustomRepositoryImpl implements RideCustomRepository {
     private static final String STATUS = "status";
-    private static final String ENDTIME = "endTime";
+    private static final String START_TIME = "startTime";
+    private static final String END_TIME = "endTime";
     private static final String LAST_MODIFIED_DATE = "lastModifiedDate";
     private static final String USER_ID = "userId";
     private static final String CLASS = "_class";
     private static final String ROUTE = "route";
     private static final String VEHICLE_ID = "vehicleId";
-    private static final long PENDING_TIME = 600l;
+    private static final long PENDING_TIME = 2l;
     @Autowired
     private CustomMongoTemplate mongoTemplate;
 
@@ -41,8 +42,10 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
         List<AggregationOperation> aggregations = new ArrayList<>();
 
         Criteria criteria = new Criteria();
-        criteria.and(STATUS).is(EntityStatus.ACTIVE)
-                .and(ENDTIME).gt(LocalDateTime.now());
+        criteria.orOperator(
+                Criteria.where(STATUS).is(EntityStatus.PREPARE),
+                Criteria.where(STATUS).is(EntityStatus.ACTIVE),
+                Criteria.where(STATUS).is(EntityStatus.EXPIRED));
         criteria.and("path.geometry.coordinates")
                 .within(new Box(
                         toPoint(request.getUpperRight()),
@@ -67,8 +70,9 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
         List<AggregationOperation> aggregations = new ArrayList<>();
 
         Criteria criteria = new Criteria();
-        criteria.and(STATUS).is(EntityStatus.ACTIVE)
-                .and(ENDTIME).gt(LocalDateTime.now());
+        criteria.orOperator(Criteria.where(STATUS).is(EntityStatus.PREPARE),
+                Criteria.where(STATUS).is(EntityStatus.ACTIVE),
+                Criteria.where(STATUS).is(EntityStatus.EXPIRED));
         MatchOperation match = new MatchOperation(criteria);
         aggregations.add(match);
 
@@ -105,7 +109,7 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
     public FindRidesResponse findSingleRideById(FindByIdRequest request) {
         List<AggregationOperation> aggregations = new ArrayList<>();
 
-        Criteria criteria = new Criteria("_id").is(request.getId()).and(ENDTIME).gt(LocalDateTime.now());
+        Criteria criteria = new Criteria("_id").is(request.getId()).and(END_TIME).gt(LocalDateTime.now());
         MatchOperation match = new MatchOperation(criteria);
         aggregations.add(match);
 
@@ -124,23 +128,45 @@ public class RideCustomRepositoryImpl implements RideCustomRepository {
         return mongoTemplate.findOne(Query.query(
                         Criteria.where(USER_ID).is(id)
                                 .and(STATUS).is(EntityStatus.ACTIVE)
-                                .and(ENDTIME).gt(LocalDateTime.now())),
+                                .and(END_TIME).gt(LocalDateTime.now())),
                 Ride.class);
     }
 
     @Override
     public void findAndActivate() {
-        Query query = Query.query(Criteria.where(STATUS).is(EntityStatus.PENDING)
-                .and(LAST_MODIFIED_DATE).lte(Instant.now().minusSeconds(PENDING_TIME)));
+        Criteria criteria = Criteria
+                .where(STATUS).is(EntityStatus.PREPARE)
+                .and(START_TIME).lte(Instant.now());
+        Query query = Query.query(criteria);
         UpdateDefinition update = Update.update(STATUS, EntityStatus.ACTIVE).set(LAST_MODIFIED_DATE, Instant.now());
         mongoTemplate.findAndModify(query, update, Ride.class);
     }
 
     @Override
-    public void findAndInactivate() {
+    public void findAndPrepare() {
+        Criteria criteria = Criteria
+                .where(STATUS).is(EntityStatus.PENDING)
+                .and(LAST_MODIFIED_DATE).lte(Instant.now().minusSeconds(PENDING_TIME * 60));
+        Query query = Query.query(criteria);
+        UpdateDefinition update = Update.update(STATUS, EntityStatus.PREPARE).set(LAST_MODIFIED_DATE, Instant.now());
+        mongoTemplate.findAndModify(query, update, Ride.class);
+    }
+
+    @Override
+    public void findAndExpire() {
         Query query = Query.query(Criteria.where(STATUS).is(EntityStatus.ACTIVE)
-                .and(ENDTIME).lte(LocalDateTime.now()));
-        UpdateDefinition update = Update.update(STATUS, EntityStatus.INACTIVE).set(LAST_MODIFIED_DATE, Instant.now());
+                .and(END_TIME).lte(LocalDateTime.now()));
+        UpdateDefinition update = Update.update(STATUS, EntityStatus.EXPIRED).set(LAST_MODIFIED_DATE, Instant.now());
+        mongoTemplate.findAndModify(query, update, Ride.class);
+    }
+
+    @Override
+    public void findAndDisable() {
+        Query query = Query.query(
+                Criteria
+                        .where(STATUS).is(EntityStatus.EXPIRED)
+                        .and(END_TIME).lte(LocalDateTime.now().minusMinutes(PENDING_TIME)));
+        UpdateDefinition update = Update.update(STATUS, EntityStatus.DISABLE).set(LAST_MODIFIED_DATE, Instant.now());
         mongoTemplate.findAndModify(query, update, Ride.class);
     }
 

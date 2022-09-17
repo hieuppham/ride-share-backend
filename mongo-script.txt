@@ -37,3 +37,54 @@ db.ride.find({}).forEach(ride => {
         false,
         true
 });
+
+db.user.updateMany(
+    {},
+    [{
+        "$set": {
+            "dob": {"$toDate": "$dob"},
+            "lastModifiedDate": {"$toDate": "$lastModifiedDate"},
+            "createdDate": {"$toDate": "$createdDate"},
+        }
+    }]
+    );
+
+db.ride.updateMany(
+    {},
+    [
+        {
+            "$set": {
+                "startTime": new Date(),
+                "endTime": new Date(),
+                "createdDate": new Date(),
+                "lastModifiedDate": new Date()
+            }
+        }
+    ]
+    );
+
+let ids = [];
+
+db.user.aggregate(
+    [
+        {
+            $match: {
+                status: 'ACTIVE', email: 'phamtrunghieu.dev.fake@outlook.com.vn'
+            }
+        },
+        {
+            $project: {
+                _id: 1
+            }
+        },
+        {
+            $set: {
+                _id: {$toString: "$_id"}
+            }
+        }
+    ]
+    ).forEach(id => {
+    ids.push(id._id)
+});
+
+console.log(ids);

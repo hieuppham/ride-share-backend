@@ -11,5 +11,6 @@ public abstract class FindAndModifyEventListener<E> implements ApplicationListen
         if (event instanceof AfterFindAndModifyEvent){
             this.onAfterFindAndModify((AfterFindAndModifyEvent<E>) event);
         }
+
     }
 }

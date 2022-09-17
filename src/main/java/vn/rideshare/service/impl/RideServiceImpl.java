@@ -24,7 +24,7 @@ import java.util.Objects;
 
 @Service
 public class RideServiceImpl implements RideService {
-    private static final long PREPARE_TIME_REQUIRE = 10l;
+    private static final long PREPARE_TIME_REQUIRE = 3l;
     @Autowired
     private RideRepository rideRepository;
 
@@ -65,6 +65,7 @@ public class RideServiceImpl implements RideService {
     public ResponseBody updateRideStatus(UpdateStatusRequest request) {
         try {
             Ride ride = rideRepository.findById(request.getId()).orElseThrow(() -> new CommonException(ResponseCode.NOT_FOUND));
+            // client send ACTIVE request by default
             if (request.getStatus().equals(EntityStatus.ACTIVE) || request.getStatus().equals(EntityStatus.PENDING)) {
                 LocalDateTime startTime = ride.getStartTime();
                 LocalDateTime endTime = ride.getEndTime();
@@ -77,8 +78,14 @@ public class RideServiceImpl implements RideService {
                 if (!startTime.isBefore(endTime)) {
                     throw new CommonException(ResponseCode.START_TIME_MUST_BE_AFTER_END_TIME);
                 }
+                ride.setStatus(request.getStatus());
+                // if activate ride before it start then set status to PREPARE
+                if (LocalDateTime.now().isBefore(startTime)) {
+                    ride.setStatus(EntityStatus.PREPARE);
+                }
+            } else {
+                ride.setStatus(request.getStatus());
             }
-            ride.setStatus(request.getStatus());
             rideRepository.save(ride);
             return new ResponseBody(ResponseCode.SUCCESS, true);
         } catch (CommonException e) {

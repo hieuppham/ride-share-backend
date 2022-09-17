@@ -1,12 +1,13 @@
 package vn.rideshare.model;
 
 public enum EntityStatus {
-    ACTIVE(1),
-    INACTIVE(0),
-    UNKNOWN(2),
-
-    PENDING(4),
-    EXPIRED(3);
+    UNKNOWN(0),
+    PENDING(1),
+    PREPARE(2),
+    ACTIVE(3),
+    INACTIVE(4),
+    EXPIRED(5),
+    DISABLE(6);
 
     private int value;
     EntityStatus(int value){

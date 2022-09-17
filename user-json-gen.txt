@@ -2,23 +2,25 @@
   '{{repeat(50, 50)}}',
   {
     uid: '{{guid()}}',
-    photoURL: 'https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTE4MDAzNDEwNzg5ODI4MTEw/barack-obama-12782369-1-402.jpg',
+    photoURL: 'https://faces-img.xcdn.link/image-lorem-face-832.jpg',
     gender: '{{random("male", "female")}}',
     fullName: '{{random("Nguyễn", "Phạm", "Trần", "Đỗ", "Dương", "Hoàng")}} {{random("Văn", "Trung", "Đức")}} {{random("Hoàng", "Dũng", "Yên", "Hiếu", "Tuấn", "Đại")}}',
-    email: 'phamtrunghieu.dev@outlook.com.vn',
-    dob: '{{date(new Date(1970, 0, 1), new Date(2022, 7, 25), "YYYY-MM-ddThh:mm:ss")}}',
+    email: 'phamtrunghieu.dev.fake@outlook.com.vn',
+    dob: '{{date(new Date(1975, 0, 1), new Date(2005, 11, 1), "YYYY-MM-ddThh:mm:ss")}}',
     phone: '{{phone()}}',
-    status: '{{random("ACTIVE", "INACTIVE", "UNKNOWN")}}',
-    userIdPhotoURL: 'https://i.ytimg.com/vi/eixQIBeyob4/maxresdefault.jpg',
+    status: '{{random("ACTIVE", "INACTIVE", "UNKNOWN", "PENDING")}}',
+    userIdPhotoURL: 'https://faces-img.xcdn.link/image-lorem-face-1644.jpg',
     vehicles: [
       {
       	id: 0,
       	type: '{{random("car", "motorbike")}}',
         name: '{{company()}}',
-        lpn: '{{guid()}}',
-        image: 'https://www.independent.ie/incoming/23251/37119474.ece/AUTOCROP/w1240/P25.ismerc.jpg',
-        lpnImage: 'https://otoso1.com.vn/wp-content/uploads/2019/05/otoso1-bien-so-dai-o-to-3.jpg'
+        lpn: '29C99999',
+        image: 'https://stimg.cardekho.com/images/carexteriorimages/630x420/Audi/A6/6426/1571906388003/front-left-side-47.jpg?impolicy=resize&imwidth=480',
+        lpnImage: 'https://storage.googleapis.com/f1-cms/2021/05/eff2a14f-20210519_075849.jpg'
       }
-    ]
+    ],
+    lastModifiedDate: '{{date(new Date(2022, 0, 1), new Date(2022, 8, 15), "YYYY-MM-ddThh:mm:ss")}}',
+    createdDate: '{{date(new Date(2022, 0, 1), new Date(2022, 8, 15), "YYYY-MM-ddThh:mm:ss")}}'
   }
 ]
